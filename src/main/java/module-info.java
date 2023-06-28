@@ -15,6 +15,10 @@ module personalLibrary {
 
     opens starterCode to javafx.fxml;
     exports starterCode;
+    exports starterCode.controller;
+    exports starterCode.model;
+    exports starterCode.view;
+    opens starterCode.controller to javafx.fxml;
 }
 
 
