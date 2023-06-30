@@ -1,9 +1,11 @@
 package starterCode.controller;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
+import javafx.scene.Node;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import starterCode.model.Cell;
 import starterCode.model.SudokuBoard;
@@ -25,7 +27,7 @@ public class SudokuControllerImpl implements SudokuController{
     @FXML
     Button setButton;
 
-    Map<TextField, Cell> gridToBoard;
+    Map<Cell, TextField> gridToBoard;
 
     Cell[][] board;
 
@@ -40,8 +42,6 @@ public class SudokuControllerImpl implements SudokuController{
     @Override
     public void run() {
         this.innitBoard();
-        this.sudokuBoard.setBoard(board);
-        this.sudokuBoard.innitBoard();
     }
 
     public void innitBoard() {
@@ -58,8 +58,38 @@ public class SudokuControllerImpl implements SudokuController{
                 childGridPane.setGridLinesVisible(true);
             }
         }
-        setButton.setOnAction(e -> {this.getAllValues();});
-        solveButton.setOnAction(e -> {sudokuBoard.solve();});
+        setButton.setOnAction(e -> {this.getAllValues();
+            this.sudokuBoard.setBoard(board);});
+        solveButton.setOnAction(e -> {
+            boolean b = this.solve(0, 0);
+            if (b) {
+                for (Map.Entry<Cell, TextField> entry : gridToBoard.entrySet()) {
+                    Cell key = entry.getKey();
+                    TextField value = entry.getValue();
+                    value.setText(String.valueOf(key.getCell()));
+                }
+            } else {
+                VBox msg = new VBox();
+                HBox okOrCancel = new HBox();
+                Button okayButton = new Button("Okay");
+                Dialog<Node> dialog = new Dialog<>();
+                Label errormsg = new Label("Unsolvable Sudoku :(");
+                okayButton.setOnAction(event -> {
+                    dialog.setResult(new Button("Okay"));
+                    dialog.close();
+                });
+                Button cancelButton = new Button("Cancel");
+                cancelButton.setOnAction(event -> {
+                    dialog.setResult(new Button("Cancel"));
+                    dialog.close();
+                });
+                okOrCancel.getChildren().addAll(okayButton, cancelButton);
+                msg.getChildren().addAll(errormsg, okOrCancel);
+                DialogPane dialogPane = new DialogPane();
+                dialogPane.setContent(msg);
+                dialog.setDialogPane(dialogPane);
+            }
+        });
     }
 
     private void addTextBoxes(GridPane temp, int x, int y) {
@@ -74,28 +104,57 @@ public class SudokuControllerImpl implements SudokuController{
                 this.board[(3 * y) + j][(x * 3) + i] = cell;
 
                 temp.add(textField, i, j);
-                this.gridToBoard.put(textField, cell);
+                this.gridToBoard.put(cell, textField);
             }
         }
         this.sudokuBoard.logSquares(arrayList);
     }
 
     public void getAllValues() {
-        for (Map.Entry<TextField, Cell> entry : gridToBoard.entrySet()) {
-            TextField key = entry.getKey();
-            Cell value = entry.getValue();
+        for (Map.Entry<Cell, TextField> entry : gridToBoard.entrySet()) {
+            Cell key = entry.getKey();
+            TextField value = entry.getValue();
             try {
-                int i = Integer.parseInt(key.getText());
+                int i = Integer.parseInt(value.getText());
                 if (i > 9 || i < 1) {
-                    key.setStyle("-fx-background-color: #EADDCA;");
+                    value.setStyle("-fx-background-color: #EADDCA;");
                 } else {
-                    key.setStyle("-fx-background-color: #ffffff;");
-                    value.setCell(Integer.parseInt(key.getText()));
+                    value.setStyle("-fx-background-color: #ffffff;");
+                    key.setCell(Integer.parseInt(value.getText()));
                 }
             } catch (NumberFormatException e) {
-                key.setText("");
-                key.setStyle("-fx-background-color: #ffffff;");
+                if (value.getText().equals("")) {
+                    value.setStyle("-fx-background-color: #ffffff;");
+                } else {
+                    value.setStyle("-fx-background-color: #EADDCA;");
+                }
             }
+        }
+    }
+
+    public boolean solve(int r, int c){
+        if (r == 9) {
+            return true;
+        } else if (c == 9) {
+            return this.solve(r+1, 0);
+        } else if (this.board[r][c].getCell() != 0) {
+            return this.solve(r, c+1);
+        } else {
+            for (int i = 1; i < 10; i++) {
+                if (this.sudokuBoard.is_valid(r, c, i)) {
+                    this.board[r][c].setCell(i);
+             /*       try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        System.out.println("interrupted :(");
+                    }*/
+                    this.gridToBoard.get(this.board[r][c]).setText(String.valueOf(i));
+                    if (this.solve(r, c+1)) {
+                        return true;
+                    }
+                    this.board[r][c].setCell(0);
+                }
+            } return false;
         }
     }
 }
