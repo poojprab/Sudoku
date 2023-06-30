@@ -69,27 +69,31 @@ public class SudokuControllerImpl implements SudokuController{
                     value.setText(String.valueOf(key.getCell()));
                 }
             } else {
-                VBox msg = new VBox();
-                HBox okOrCancel = new HBox();
-                Button okayButton = new Button("Okay");
-                Dialog<Node> dialog = new Dialog<>();
-                Label errormsg = new Label("Unsolvable Sudoku :(");
-                okayButton.setOnAction(event -> {
-                    dialog.setResult(new Button("Okay"));
-                    dialog.close();
-                });
-                Button cancelButton = new Button("Cancel");
-                cancelButton.setOnAction(event -> {
-                    dialog.setResult(new Button("Cancel"));
-                    dialog.close();
-                });
-                okOrCancel.getChildren().addAll(okayButton, cancelButton);
-                msg.getChildren().addAll(errormsg, okOrCancel);
-                DialogPane dialogPane = new DialogPane();
-                dialogPane.setContent(msg);
-                dialog.setDialogPane(dialogPane);
+                this.unsolvableMSG();
             }
         });
+    }
+
+    private void unsolvableMSG() {
+        VBox msg = new VBox();
+        HBox okOrCancel = new HBox();
+        Button okayButton = new Button("Okay");
+        Dialog<Node> dialog = new Dialog<>();
+        Label errormsg = new Label("Unsolvable Sudoku :(");
+        okayButton.setOnAction(event -> {
+            dialog.setResult(new Button("Okay"));
+            dialog.close();
+        });
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setOnAction(event -> {
+            dialog.setResult(new Button("Cancel"));
+            dialog.close();
+        });
+        okOrCancel.getChildren().addAll(okayButton, cancelButton);
+        msg.getChildren().addAll(errormsg, okOrCancel);
+        DialogPane dialogPane = new DialogPane();
+        dialogPane.setContent(msg);
+        dialog.setDialogPane(dialogPane);
     }
 
     private void addTextBoxes(GridPane temp, int x, int y) {
